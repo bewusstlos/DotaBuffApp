@@ -19,6 +19,7 @@ import java.util.regex.Pattern;
  * Created by bewus on 4/9/2016.
  */
 public class Profile {
+    private static String url = "http://www.dotabuff.com/players/194389503";
     private String htmlSrc;
     private String profileName;
     private String avatarSrc;
@@ -29,7 +30,6 @@ public class Profile {
     private String lastMatch;
 
     public Profile(){
-        String url = "http://www.dotabuff.com/players/194389503";
         setHtmlSrc(url);
         setProfileName();
         setAvatarSrc();
@@ -37,6 +37,11 @@ public class Profile {
         setRecord();
         setLastMatch();
     }
+
+    static public String getUrl() {
+        return url;
+    }
+
     private void setProfileName(){
         Matcher m = Pattern.compile("<div class=\"header-content-title\"><h1>(.*?)<small>Overview</small></h1>").matcher(htmlSrc);
         m.find();
@@ -46,6 +51,7 @@ public class Profile {
     public String getProfileName(){
         return profileName;
     }
+
     private void setAvatarSrc(){
         Matcher m = Pattern.compile("<meta property=\"og:image\" content=\"(.*?)\" />").matcher(htmlSrc);
         m.find();
@@ -87,15 +93,17 @@ public class Profile {
     public String getRecordAbandons(){
         return recordAbandons;
     }
+
     private void setLastMatch(){
         //data-time-ago="2016-04-09T09:25:25+00:00"
-        Date date = new Date();
+        com.example.bewusstlos.dotabuffapp.Date date = new com.example.bewusstlos.dotabuffapp.Date(htmlSrc);
         lastMatch = date.compareWithCurrent();
     }
 
     public String getLastMatch(){
         return lastMatch;
     }
+
     private void setHtmlSrc(String url){
         RequestTask requestTask = new RequestTask();
         requestTask.execute(url);
@@ -109,58 +117,7 @@ public class Profile {
             Log.i("Execution!","");
         }
     }
-    /*Мій клас для дати, який ппорівнює дату
+    /*Мій клас для дати, який порівнює дату
      *дату останньої гри з поточною датою
      */
-    class Date{
-        int year;
-        int month;
-        int day;
-        int hour;
-        int minute;
-
-        public Date(){
-            Matcher m = Pattern.compile("<dd><time datetime=\"(.*?)-(.*?)-(.*?)T(.*?):(.*?):(.*?)+(.*?):(.*?)\" title").matcher(htmlSrc);
-            m.find();
-            year = Integer.parseInt(m.group(1));
-            month = Integer.parseInt(m.group(2));
-            day = Integer.parseInt(m.group(3));
-            hour = Integer.parseInt(m.group(4));
-            minute = Integer.parseInt(m.group(5));
-        }
-        public String compareWithCurrent(){
-            java.util.Date date = new java.util.Date();
-            date.setHours(date.getDay() + 7);
-            if(date.getYear() > this.year)
-                return (date.getYear() - this.year) + " years ago";
-            if(date.getMonth() > this.month)
-                return (date.getMonth() - this.month) + " months ago";
-            if(date.getDay() > this.day)
-                return (date.getDay() - this.day) + " days ago";
-            if(date.getHours() > this.hour)
-                return (date.getHours() - this.hour) + " hours ago";
-            if(date.getMinutes()> this.minute)
-                return (date.getMinutes() - this.minute) + " minutes ago";
-            return "Playing";
-        }
-    }
-    //Клас для завантаження коду сторінки
-    class RequestTask extends AsyncTask<String, String, String> {
-        @Override
-        protected String doInBackground(String... url) {
-            StringBuilder sb = new StringBuilder();
-            try {
-                URL pageURL = new URL(url[0]);
-                String inputLine;
-                URLConnection uc = pageURL.openConnection();
-                BufferedReader buff = new BufferedReader(new InputStreamReader(uc.getInputStream()));
-                while ((inputLine = buff.readLine()) != null) {
-                    sb.append(inputLine);
-                }
-            }
-            catch (Exception e) {
-            }
-            return sb.toString();
-        }
-    }
 }

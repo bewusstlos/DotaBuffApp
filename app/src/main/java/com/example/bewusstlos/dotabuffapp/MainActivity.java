@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        MostPlayedHeroes mph = new MostPlayedHeroes();
         TabHost tabs = (TabHost) findViewById(android.R.id.tabhost);
         tabs.setup();
         TabHost.TabSpec spec = tabs.newTabSpec("tag1");
