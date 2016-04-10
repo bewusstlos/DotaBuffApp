@@ -150,6 +150,7 @@
         android:layout_height="wrap_content">
 
         <LinearLayout
+            android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="horizontal">
@@ -219,4 +220,7 @@
                 android:layout_height="wrap_content" />
         </LinearLayout>
     </HorizontalScrollView>
+    <include layout="@layout/overview">
+
+    </include>
 </RelativeLayout>

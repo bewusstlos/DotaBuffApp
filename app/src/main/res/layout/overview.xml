@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_below="@id/tabs"
+    android:layout_height="match_parent"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="com.example.bewusstlos.dotabuffapp.MainActivity"
+    tools:showIn="@layout/activity_main">
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="Health/Sanity/Hunger 130/150/150 (I had a wrong concept of how sanity works)
+- will regenerate sanity for 9/mins.
+- If player have any eggplant product in inventory sanity will start to drop instead.
+- eat any eggplant product result in -50 sanity
+*it doesn't really look like drawback perks when playing in DST since you can prevent from taken eggplant entirely unless I found a way to make it more brutal.
+
+ver 0.9.4
+- make it compatible with costume
+- fixed hair
+
+ver 0.9.3
+add perks
+- TopNep : High sanity, people around her regen sanity with low rate
+- Protagonist's Privilege : 15% bonus to attack damage
+- Melongenophobia : Eggplant can harm her sanity in various way(wip)
+
+ver 0.9.2
+- fix visible hand skin at joint
+
+ver 0.9.1
+- probably cover all art file needed.
+- still no perk
+
+ver 0.9
+hunger/hp - standard
+insanity set to 300 "/>
+</android.support.v4.widget.NestedScrollView>
