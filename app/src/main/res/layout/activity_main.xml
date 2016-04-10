@@ -22,16 +22,16 @@
             android:id="@+id/txt_profile_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="#cfd8dc"
             android:layout_toRightOf="@id/img_profile_avatar"
+            android:textColor="#cfd8dc"
             android:textSize="24sp" />
 
         <LinearLayout
-            android:layout_below="@id/txt_profile_name"
             android:id="@+id/short_info_layout"
             android:layout_width="match_parent"
-            android:layout_marginRight="8dp"
             android:layout_height="wrap_content"
+            android:layout_below="@id/txt_profile_name"
+            android:layout_marginRight="8dp"
             android:layout_toRightOf="@id/img_profile_avatar"
             android:orientation="horizontal">
 
@@ -42,22 +42,23 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:textSize="12sp"
                     android:id="@+id/txt_win_rate_label"
                     android:layout_width="match_parent"
-                    android:textAlignment="center"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/txt_profile_name"
-                    android:text="Win Rate" />
+                    android:text="Win Rate"
+                    android:textAlignment="center"
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/txt_win_rate"
-                    android:textAlignment="center"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/txt_win_rate_label"
-                    android:layout_centerHorizontal="true" />
+                    android:layout_centerHorizontal="true"
+                    android:textAlignment="center" />
             </LinearLayout>
+
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -65,58 +66,65 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:textSize="12sp"
                     android:id="@+id/txt_record_label"
                     android:layout_width="match_parent"
-                    android:textAlignment="center"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/txt_profile_name"
-                    android:text="Record" />
+                    android:text="Record"
+                    android:textAlignment="center"
+                    android:textSize="12sp" />
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:textAlignment="center">
+
                     <TextView
                         android:id="@+id/txt_record_wins"
-                        android:textAlignment="center"
                         android:layout_width="0dp"
-                        android:textColor="@android:color/holo_green_light"
                         android:layout_height="match_parent"
-                        android:layout_weight="2"
                         android:layout_below="@id/txt_win_rate_label"
-                        android:layout_centerHorizontal="true" />
+                        android:layout_centerHorizontal="true"
+                        android:layout_weight="2"
+                        android:textAlignment="center"
+                        android:textColor="@android:color/holo_green_light" />
+
                     <TextView
                         android:layout_width="0dp"
-                        android:textAlignment="center"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="-"/>
+                        android:text="-"
+                        android:textAlignment="center" />
+
                     <TextView
                         android:id="@+id/txt_record_losses"
-                        android:textAlignment="center"
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
-                        android:textColor="@android:color/holo_red_light"
-                        android:layout_weight="2"
                         android:layout_below="@id/txt_win_rate_label"
-                        android:layout_centerHorizontal="true" />
+                        android:layout_centerHorizontal="true"
+                        android:layout_weight="2"
+                        android:textAlignment="center"
+                        android:textColor="@android:color/holo_red_light" />
+
                     <TextView
                         android:layout_width="0dp"
-                        android:textAlignment="center"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="-"/>
+                        android:text="-"
+                        android:textAlignment="center" />
+
                     <TextView
                         android:id="@+id/txt_record_abandons"
-                        android:textAlignment="center"
                         android:layout_width="0dp"
-                        android:layout_weight="2"
                         android:layout_height="match_parent"
                         android:layout_below="@id/txt_win_rate_label"
-                        android:layout_centerHorizontal="true" />
+                        android:layout_centerHorizontal="true"
+                        android:layout_weight="2"
+                        android:textAlignment="center" />
                 </LinearLayout>
             </LinearLayout>
+
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -124,103 +132,102 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:textSize="12sp"
                     android:id="@+id/txt_last_match_label"
                     android:layout_width="match_parent"
-                    android:textAlignment="center"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/txt_profile_name"
-                    android:text="Last Match" />
+                    android:text="Last Match"
+                    android:textAlignment="center"
+                    android:textSize="12sp" />
 
                 <TextView
                     android:id="@+id/txt_last_match"
-                    android:textAlignment="center"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/txt_win_rate_label"
-                    android:layout_centerHorizontal="true" />
+                    android:layout_centerHorizontal="true"
+                    android:textAlignment="center" />
             </LinearLayout>
         </LinearLayout>
     </RelativeLayout>
 
-    <HorizontalScrollView
-        android:layout_marginTop="2dp"
-        android:layout_below="@id/header_layout"
+    <TabHost xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@android:id/tabhost"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent"
+        android:layout_below="@id/header_layout"
+        android:layout_marginTop="2dp">
 
         <LinearLayout
-            android:id="@+id/tabs"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="horizontal">
+            android:orientation="vertical">
 
-            <Button
-                android:background="@color/colorPrimaryDark"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginRight="2dp"
-                android:text="Overview"
-                android:layout_height="wrap_content" />
-            <Button
-                android:background="@color/colorPrimaryDark"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginRight="2dp"
-                android:text="Matches"
-                android:layout_height="wrap_content" />
-            <Button
-                android:background="@color/colorPrimaryDark"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginRight="2dp"
-                android:text="Heroes"
-                android:layout_height="wrap_content" />
-            <Button
-                android:background="@color/colorPrimaryDark"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginRight="2dp"
-                android:text="Items"
-                android:layout_height="wrap_content" />
-            <Button
-                android:background="@color/colorPrimaryDark"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginRight="2dp"
-                android:text="Records"
-                android:layout_height="wrap_content" />
-            <Button
-                android:background="@color/colorPrimaryDark"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginRight="2dp"
-                android:text="Scenarios"
-                android:layout_height="wrap_content" />
-            <Button
-                android:background="@color/colorPrimaryDark"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginRight="2dp"
-                android:text="Activity"
-                android:layout_height="wrap_content" />
-            <Button
-                android:background="@color/colorPrimaryDark"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginRight="2dp"
-                android:text="Trends"
-                android:layout_height="wrap_content" />
-            <Button
-                android:background="@color/colorPrimaryDark"
-                android:layout_width="0dp"
-                android:layout_weight="1"
-                android:layout_marginRight="2dp"
-                android:text="Achievements"
-                android:layout_height="wrap_content" />
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TabWidget
+                    android:id="@android:id/tabs"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/colorPrimaryDark" />
+            </HorizontalScrollView>
+
+            <FrameLayout
+                android:id="@android:id/tabcontent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <LinearLayout
+                    android:id="@+id/overview"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"></LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/matches"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"></LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/heroes"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"></LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/items"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"></LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/records"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"></LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/scenarios"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"></LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/activity"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"></LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/trends"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"></LinearLayout>
+            </FrameLayout>
         </LinearLayout>
-    </HorizontalScrollView>
-    <include layout="@layout/overview">
 
-    </include>
+    </TabHost>
 </RelativeLayout>
