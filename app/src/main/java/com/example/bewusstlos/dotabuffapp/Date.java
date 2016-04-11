@@ -1,5 +1,6 @@
 package com.example.bewusstlos.dotabuffapp;
 
+import java.util.Calendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,7 +15,7 @@ public class Date {
     int minute;
 
     public Date(String htmlSrc) {
-        Matcher m = Pattern.compile("<time datetime=\"(.*?)-(.*?)-(.*?)T(.*?):(.*?):(.*?)+(.*?):(.*?)\" title").matcher(htmlSrc);
+        Matcher m = Pattern.compile("<time datetime=\"(.*?)-(.*?)-(.*?)T(.*?):(.*?):(.*?)+(.*?):(.*?)\"").matcher(htmlSrc);
         m.find();
         year = Integer.parseInt(m.group(1));
         month = Integer.parseInt(m.group(2));
@@ -24,18 +25,17 @@ public class Date {
     }
 
     public String compareWithCurrent() {
-        java.util.Date date = new java.util.Date();
-        date.setHours(date.getDay() + 7);
-        if (date.getYear() > this.year)
-            return (date.getYear() - this.year) + " years ago";
-        if (date.getMonth() > this.month)
-            return (date.getMonth() - this.month) + " months ago";
-        if (date.getDay() > this.day)
-            return (date.getDay() - this.day) + " days ago";
-        if (date.getHours() > this.hour)
-            return (date.getHours() - this.hour) + " hours ago";
-        if (date.getMinutes() > this.minute)
-            return (date.getMinutes() - this.minute) + " minutes ago";
+        Calendar c = Calendar.getInstance();
+        if (c.get(Calendar.YEAR) > this.year)
+            return (c.get(Calendar.YEAR) - this.year) + " years ago";
+        if (c.get(Calendar.MONTH) > this.month)
+            return (c.get(Calendar.MONTH) - this.month) + " months ago";
+        if (c.get(Calendar.DATE) > this.day)
+            return (c.get(Calendar.DATE) - this.day) + " days ago";
+        if (c.get(Calendar.HOUR) > this.hour)
+            return (c.get(Calendar.HOUR) - this.hour) + " hours ago";
+        if (c.get(Calendar.MINUTE) > this.minute)
+            return (c.get(Calendar.MINUTE) - this.minute) + " minutes ago";
         return "Playing";
     }
 }

@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
  * Created by bewus on 4/9/2016.
  */
 public class Profile {
-    private static String url = "http://www.dotabuff.com/players/194389503";
+    private String url;
     private String htmlSrc;
     private String profileName;
     private String avatarSrc;
@@ -29,7 +29,8 @@ public class Profile {
     private String recordAbandons;
     private String lastMatch;
 
-    public Profile(){
+    public Profile(String s) {
+        url = s;
         setHtmlSrc(url);
         setProfileName();
         setAvatarSrc();
@@ -38,7 +39,7 @@ public class Profile {
         setLastMatch();
     }
 
-    static public String getUrl() {
+    public String getUrl() {
         return url;
     }
 
