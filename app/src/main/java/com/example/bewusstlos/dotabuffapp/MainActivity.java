@@ -1,22 +1,38 @@
 package com.example.bewusstlos.dotabuffapp;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Layout;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.ScrollView;
+import android.widget.Space;
 import android.widget.TabHost;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends StartActivity {
     String url;
+    LinearLayout matchesLayout;
+    LinearLayout overviewLayout;
+    String htmlSrcMatches = null;
+
     @Override
     /*Встановлюється шапка додатку
      *з основною інформацією
@@ -25,7 +41,20 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         Bundle b = getIntent().getExtras();
-        url = b.getString("EmpID");
+        url = b.getString("Link");
+        RequestTask requestTask = new RequestTask();
+        requestTask.execute(url + "/matches");
+        try {
+            htmlSrcMatches = requestTask.get();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            Log.i("Interrupt!", "");
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            Log.i("Execution!", "");
+        }
+        matchesLayout = (LinearLayout) findViewById(R.id.matches_layout);
+        overviewLayout = (LinearLayout) findViewById(R.id.overview_layout);
         TabHost tabs = (TabHost) findViewById(android.R.id.tabhost);
         tabs.setup();
         TabHost.TabSpec spec = tabs.newTabSpec("tag1");
@@ -71,13 +100,13 @@ public class MainActivity extends AppCompatActivity {
 
         tabs.setCurrentTab(0);
 
-        ImageView imgProfileAvatar = (ImageView)findViewById(R.id.img_profile_avatar);
-        TextView txtProfileName = (TextView)findViewById(R.id.txt_profile_name);
-        TextView txtWinRate = (TextView)findViewById(R.id.txt_win_rate);
-        TextView txtRecordWins = (TextView)findViewById(R.id.txt_record_wins);
-        TextView txtRecordLosses = (TextView)findViewById(R.id.txt_record_losses);
-        TextView txtRecordAbandons = (TextView)findViewById(R.id.txt_record_abandons);
-        TextView txtLastMatch = (TextView)findViewById(R.id.txt_last_match);
+        ImageView imgProfileAvatar = (ImageView) findViewById(R.id.img_profile_avatar);
+        TextView txtProfileName = (TextView) findViewById(R.id.txt_profile_name);
+        TextView txtWinRate = (TextView) findViewById(R.id.txt_win_rate);
+        TextView txtRecordWins = (TextView) findViewById(R.id.txt_record_wins);
+        TextView txtRecordLosses = (TextView) findViewById(R.id.txt_record_losses);
+        TextView txtRecordAbandons = (TextView) findViewById(R.id.txt_record_abandons);
+        TextView txtLastMatch = (TextView) findViewById(R.id.txt_last_match);
         Profile profile = new Profile(url);
         new DownloadImageTask(imgProfileAvatar).execute(profile.getAvatarSrc());
         txtProfileName.setText(profile.getProfileName());
@@ -87,150 +116,314 @@ public class MainActivity extends AppCompatActivity {
         txtRecordAbandons.setText(profile.getRecordAbandons());
         txtLastMatch.setText(profile.getLastMatch());
 
-        setOverviewLayout();
+        setOverviewLayout(overviewLayout);
+        setMatchesLayout(matchesLayout);
     }
 
-    public void setOverviewLayout() {
+    public class Matches {
+        Matcher m = Pattern.compile("<tr>" +
+                "<td class=\"cell-icon\">" +
+                "<div class=\"image-container image-container-hero image-container-icon\">(.*?)" +
+                "</tr>").matcher(htmlSrcMatches);
+        private String heroName;
+        private String imgHeroSrc;
+        private String result;
+        private String htmlMatchesSrc;
+        private String matchTime;
+        private String matchRanked;
+        private String matchType;
+        private String duration;
+        private float kill;
+        private float death;
+        private float assist;
+        private String itemsSrc;
+        private String[] itemsList;
+
+        public Matches(int index) {
+            itemsList = new String[6];
+            for (int i = 0; i < index + 1; i++)
+                m.find();
+            this.htmlMatchesSrc = m.group(1);
+            Matcher r = Pattern.compile("</div></td><td class=\"r-none-tablet cell-xxlarge\">(.*?)</div></td>").matcher(this.htmlMatchesSrc);
+            r.find();
+            if (r.find() == true)
+                this.itemsSrc = r.group(1);
+            setFields();
+            setItemsList(this.htmlMatchesSrc);
+        }
+
+        private void setFields() {
+            Matcher m = Pattern.compile("<a href=\".*?\"><img class=\"image-hero image-icon\" rel=\"tooltip-remote\" title=\".*?\" data-tooltip-url=\".*?\" src=\"(.*?)\" /></a></div></td><td class=\"cell-large\"><a href=\".*?\">(.*?)</a><div class=\"subtext\">.*?</div></td><td><a class=\".*?\" href=\".*?\">(.*?)</a><div class=\"subtext\"><time datetime=\"(.*?)T(.*?):(.*?):.*?\" title=\".*?\" data-time-ago=\".*?\">.*?</time></div></td><td class=\"r-none-mobile\">(.*?)<div class=\"subtext\">(.*?)</div></td><td>(.{3,8}?)<div class=\"bar bar-default\"><div class=\"segment segment-duration\" style=\".*?;\"></div></div></td><td><span class=\"kda-record\"><span class=\"value\">(.*?)</span>/<span class=\"value\">(.*?)</span>/<span class=\"value\">(.*?)</span></span><div class=\"bar bar-default\"><div class=\"segment segment-kill\" style=\".*?;\"></div><div class=\"segment segment-death\" style=\".*?;\"></div><div class=\"segment segment-assist\" style=\".*?;\"></div></div></td><td class=\"r-none-tablet cell-xxlarge\">.*?").matcher(this.htmlMatchesSrc);
+            //Matcher k = Pattern.compile("<a href=\".*?\"><img class=\"image-hero image-icon\" rel=\"tooltip-remote\" title=\".*?\" data-tooltip-url=\".*?\" src=\"(.*?)\" /></a></div></td><td class=\"cell-large\"><a href=\".*?\">(.*?)</a><div class=\"subtext\">.*?</div></td><td><a class=\".*?\" href=\".*?\">(.*?)</a><div class=\"subtext\"><time datetime=\"(.*?)T(.*?):(.*?):.*?\" title=\".*?\" data-time-ago=\".*?\">.*?</time></div></td><td class=\"r-none-mobile\">(.*?)<div class=\"subtext\">(.*?)</div></td><td>(.{3,8}?)<div class=\"bar bar-default\"><div class=\"segment segment-duration\" style=\".*?;\"></div></div></td><td><span class=\"kda-record\"><span class=\"value\">(.*?)</span>/<span class=\"value\">(.*?)</span>/<span class=\"value\">(.*?)</span></span><div class=\"bar bar-default\"><div class=\"segment segment-kill\" style=\".*?;\"></div><div class=\"segment segment-death\" style=\".*?;\"></div><div class=\"segment segment-assist\" style=\".*?;\"></div></div></td><td class=\"r-none-tablet cell-xxlarge\">.*?")
+            m.find();
+            imgHeroSrc = "http://www.dotabuff.com" + m.group(1);
+            heroName = m.group(2).replace("&#39;", "'");
+            result = m.group(3);
+            matchTime = m.group(4) + " " + m.group(5) + ":" + m.group(6);
+            matchRanked = m.group(7);
+            matchType = m.group(8);
+            duration = m.group(9);
+            kill = Float.parseFloat(m.group(10));
+            death = Float.parseFloat(m.group(11));
+            assist = Float.parseFloat(m.group(12));
+
+        }
+
+        private void setItemsList(String htmlSrcMatches) {
+            int index = 0;
+            for (int j = 0; j < 6; j++) {
+                Matcher m = Pattern.compile("<img class=\"image-item image-icon\" " +
+                        "rel=\"tooltip-remote\" " +
+                        "title=\".*?\" " +
+                        "data-tooltip-url=\".*?\" " +
+                        "src=\"(.*?)\" />" +
+                        "</a></div>").matcher(htmlMatchesSrc);
+                for (int i = 0; i < index + 1; i++) {
+                    m.find();
+                }
+                if (m.find() == true)
+                    itemsList[index] = "http://www.dotabuff.com" + m.group(1);
+                else
+                    itemsList[index] = null;
+                index++;
+            }
+        }
+    }
+
+    public void setMatchesLayout(LinearLayout layout) {
+        ArrayList<Matches> matches = new ArrayList<Matches>();
+        for (int i = 0; i < 40; i++) {
+            matches.add(i, new Matches(i));
+
+            LinearLayout l = new LinearLayout(this);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            lp.setMargins(16, 16, 16, 0);
+            l.setOrientation(LinearLayout.VERTICAL);
+
+            RelativeLayout matchesL = new RelativeLayout(this);
+            matchesL.setBackgroundColor(Color.rgb(69, 90, 100));
+            matchesL.setPadding(8, 8, 8, 8);
+            RelativeLayout.LayoutParams paramsForOverviewL = new RelativeLayout.LayoutParams
+                    (
+                            ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+                    );
+            paramsForOverviewL.setMargins(16, 16, 16, 0);
+
+            ImageView img = new ImageView(this);
+            new DownloadImageTask(img).execute(matches.get(i).imgHeroSrc);
+            RelativeLayout.LayoutParams paramsForImg = new RelativeLayout.LayoutParams
+                    (
+                            ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT
+                    );
+            paramsForImg.setMargins(16, 16, 16, 16);
+            img.setId(i);
+
+            LinearLayout firstInnerMatchesL = new LinearLayout(this);
+            firstInnerMatchesL.setOrientation(LinearLayout.VERTICAL);
+            RelativeLayout.LayoutParams paramsForFirstInnerMatchesL = new RelativeLayout.LayoutParams
+                    (
+                            ViewGroup.LayoutParams.WRAP_CONTENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                    );
+            paramsForFirstInnerMatchesL.addRule(RelativeLayout.RIGHT_OF, img.getId());
+            paramsForFirstInnerMatchesL.setMargins(0, 0, 0, 0);
+            firstInnerMatchesL.setId(i + 40);
+
+            TextView txtHeroName = new TextView(this);
+            txtHeroName.setText(matches.get(i).heroName);
+            txtHeroName.setTextColor(Color.WHITE);
+            txtHeroName.setId(i + 80);
+
+            firstInnerMatchesL.addView(txtHeroName);
+
+            TextView txtMatchTime = new TextView(this);
+            txtMatchTime.setText(matches.get(i).matchTime);
+            txtMatchTime.setId(i + 120);
+
+            firstInnerMatchesL.addView(txtMatchTime);
+
+            TextView txtMatchRanked = new TextView(this);
+            txtMatchRanked.setText(matches.get(i).matchRanked);
+            txtMatchRanked.setTextSize(14);
+            RelativeLayout.LayoutParams paramsforMatchRanked = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            paramsforMatchRanked.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            txtMatchRanked.setId(i + 160);
+
+            TextView txtMatchType = new TextView(this);
+            txtMatchType.setText(matches.get(i).matchType);
+            txtMatchType.setTextSize(14);
+            RelativeLayout.LayoutParams paramsForMatchType = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            paramsForMatchType.addRule(RelativeLayout.BELOW, txtMatchRanked.getId());
+            paramsForMatchType.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            paramsForFirstInnerMatchesL.setMargins(16, 0, 16, 0);
+            txtMatchType.setId(i + 200);
+
+            TextView txtResult = new TextView(this);
+            RelativeLayout.LayoutParams paramsForTxtResult = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            paramsForTxtResult.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            paramsForTxtResult.addRule(RelativeLayout.BELOW, firstInnerMatchesL.getId());
+            txtResult.setTextSize(18);
+            txtResult.setText(matches.get(i).result);
+            if(txtResult.getText().toString() == "Won Match")
+                txtResult.setTextColor(Color.GREEN);
+            if(txtResult.getText().toString() == "Lost Match")
+                txtResult.setTextColor(Color.RED);
+            txtResult.setId(i + 280);
+
+            TextView txtDuration = new TextView(this);
+            txtDuration.setText(matches.get(i).duration);
+            RelativeLayout.LayoutParams paramsForTxtDuration = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            paramsForTxtDuration.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            paramsForTxtDuration.addRule(RelativeLayout.BELOW, txtResult.getId());
+            txtDuration.setId(i + 320);
+
+            matchesL.addView(txtResult, paramsForTxtResult);
+            matchesL.addView(txtDuration, paramsForTxtDuration);
+
+            LinearLayout matchesProgressKdaL = new LinearLayout(this);
+            RelativeLayout.LayoutParams paramsForMatchesProgressKdaL = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            matchesProgressKdaL.setOrientation(LinearLayout.HORIZONTAL);
+            paramsForMatchesProgressKdaL.addRule(RelativeLayout.BELOW, txtDuration.getId());
+            matchesProgressKdaL.setId(i + 360);
+
+            LinearLayout killBar = new LinearLayout(this);
+            killBar.setBackgroundColor(Color.RED);
+            float killWeight = ((matches.get(i).kill + matches.get(i).death + matches.get(i).assist)/100) * matches.get(i).kill;
+            LinearLayout.LayoutParams paramsForKillBar = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, killWeight);
+            killBar.setId(i + 400);
+
+            TextView txtKillBar = new TextView(this);
+            txtKillBar.setText(Float.toString(matches.get(i).kill).replace(".0", ""));
+            txtKillBar.setTextColor(Color.WHITE);
+            killBar.addView(txtKillBar);
+
+            LinearLayout deathBar = new LinearLayout(this);
+            deathBar.setBackgroundColor(Color.GRAY);
+            float deathWeight = ((matches.get(i).kill + matches.get(i).death + matches.get(i).assist)/100) * matches.get(i).death;
+            LinearLayout.LayoutParams paramsForDeathBar = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, deathWeight);
+
+            TextView txtDeathBar = new TextView(this);
+            txtDeathBar.setText(Float.toString(matches.get(i).death).replace(".0", ""));
+                    txtDeathBar.setTextColor(Color.WHITE);
+            deathBar.addView(txtDeathBar);
+
+            LinearLayout assistBar = new LinearLayout(this);
+            assistBar.setBackgroundColor(Color.GREEN);
+            float assistWeight = ((matches.get(i).kill + matches.get(i).death + matches.get(i).assist)/100) * matches.get(i).assist;
+            LinearLayout.LayoutParams paramsForAssistBar = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, assistWeight);
+
+            TextView txtAssistBar = new TextView(this);
+            txtAssistBar.setText(Float.toString(matches.get(i).assist).replace(".0", ""));
+            txtAssistBar.setTextColor(Color.WHITE);
+            assistBar.addView(txtAssistBar);
+
+            LinearLayout thirdInnerMatchesL = new LinearLayout(this);
+            thirdInnerMatchesL.setOrientation(LinearLayout.HORIZONTAL);
+            RelativeLayout.LayoutParams paramsForThirdInnerMatchesL = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            paramsForThirdInnerMatchesL.addRule(RelativeLayout.BELOW, matchesProgressKdaL.getId());
+            paramsForThirdInnerMatchesL.addRule(RelativeLayout.CENTER_HORIZONTAL);
+            paramsForThirdInnerMatchesL.setMargins(0, 16, 0, 0);
+
+            for(int j = 0;j < 6;j++){
+                if(matches.get(i).itemsList[j] != null) {
+                    ImageView imgItem = new ImageView(this);
+                    RelativeLayout.LayoutParams imgLP = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                    imgItem.setPadding(0,0,16,0);
+                    new DownloadImageTask(imgItem).execute(matches.get(i).itemsList[j]);
+                    thirdInnerMatchesL.addView(imgItem, imgLP);
+                }
+            }
+
+            matchesProgressKdaL.addView(killBar, paramsForKillBar);
+            matchesProgressKdaL.addView(deathBar, paramsForDeathBar);
+            matchesProgressKdaL.addView(assistBar, paramsForAssistBar);
+
+            matchesL.addView(thirdInnerMatchesL, paramsForThirdInnerMatchesL);
+            matchesL.addView(matchesProgressKdaL, paramsForMatchesProgressKdaL);
+            matchesL.addView(txtMatchRanked, paramsforMatchRanked);
+            matchesL.addView(txtMatchType, paramsForMatchType);
+            matchesL.addView(img, paramsForImg);
+            matchesL.addView(firstInnerMatchesL, paramsForFirstInnerMatchesL);
+            l.addView(matchesL, paramsForOverviewL);
+            if (i != 0)
+                layout.addView(l, lp);
+        }
+    }
+
+    public void setOverviewLayout(LinearLayout layout) {
         MostPlayedHeroes mph = new MostPlayedHeroes(url);
 
-        ImageView imgHeroOverview0 = (ImageView) findViewById(R.id.overview_hero_avatar_1);
-        TextView txtHeroNameOverview0 = (TextView) findViewById(R.id.overview_hero_name_1);
-        TextView txtHeroLastMatchOverview0 = (TextView) findViewById(R.id.overview_hero_last_match_1);
-        TextView txtHeroGamesPlayedOverview0 = (TextView) findViewById(R.id.overview_hero_matches_played_1);
-        TextView txtHeroWinRateOverview0 = (TextView) findViewById(R.id.overview_hero_win_rate_1);
-        TextView txtHeroKdaRatioOverview0 = (TextView) findViewById(R.id.overview_hero_kda_ratio_1);
+        for (int i = 0; i < 10; i++) {
+            LinearLayout l = new LinearLayout(this);
+            l.setBackgroundColor(Color.rgb(69, 90, 100));
+            l.setPadding(8, 8, 8, 8);
+            l.setOrientation(LinearLayout.HORIZONTAL);
+            LinearLayout.LayoutParams paramsForL = new LinearLayout.LayoutParams
+                    (
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.WRAP_CONTENT
+                    );
+            paramsForL.setMargins(16, 16, 16, 0);
 
-        new DownloadImageTask(imgHeroOverview0).execute(mph.getGameOfMostPlayedHeroes(0).getHeroAvatarSrc());
-        txtHeroNameOverview0.setText(mph.getGameOfMostPlayedHeroes(0).getHeroName());
-        txtHeroLastMatchOverview0.setText(mph.getGameOfMostPlayedHeroes(0).getLastMatch());
-        txtHeroGamesPlayedOverview0.setText(mph.getGameOfMostPlayedHeroes(0).getMatchesPlayed());
-        txtHeroWinRateOverview0.setText(mph.getGameOfMostPlayedHeroes(0).getWinRate());
-        txtHeroKdaRatioOverview0.setText(mph.getGameOfMostPlayedHeroes(0).getKda());
+            RelativeLayout overviewL = new RelativeLayout(this);
+            overviewL.setPadding(8, 8, 8, 8);
+            RelativeLayout.LayoutParams paramsForOverviewL = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        ImageView imgHeroOverview1 = (ImageView) findViewById(R.id.overview_hero_avatar_2);
-        TextView txtHeroNameOverview1 = (TextView) findViewById(R.id.overview_hero_name_2);
-        TextView txtHeroLastMatchOverview1 = (TextView) findViewById(R.id.overview_hero_last_match_2);
-        TextView txtHeroGamesPlayedOverview1 = (TextView) findViewById(R.id.overview_hero_matches_played_2);
-        TextView txtHeroWinRateOverview1 = (TextView) findViewById(R.id.overview_hero_win_rate_2);
-        TextView txtHeroKdaRatioOverview1 = (TextView) findViewById(R.id.overview_hero_kda_ratio_2);
+            ImageView img = new ImageView(this);
+            new DownloadImageTask(img).execute(mph.getGameOfMostPlayedHeroes(i).getHeroAvatarSrc());
+            RelativeLayout.LayoutParams paramsForImg = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            paramsForImg.addRule(RelativeLayout.CENTER_VERTICAL);
+            paramsForImg.setMargins(8, 8, 32, 8);
+            img.setId(i);
 
-        new DownloadImageTask(imgHeroOverview1).execute(mph.getGameOfMostPlayedHeroes(1).getHeroAvatarSrc());
-        txtHeroNameOverview1.setText(mph.getGameOfMostPlayedHeroes(1).getHeroName());
-        txtHeroLastMatchOverview1.setText(mph.getGameOfMostPlayedHeroes(1).getLastMatch());
-        txtHeroGamesPlayedOverview1.setText(mph.getGameOfMostPlayedHeroes(1).getMatchesPlayed());
-        txtHeroWinRateOverview1.setText(mph.getGameOfMostPlayedHeroes(1).getWinRate());
-        txtHeroKdaRatioOverview1.setText(mph.getGameOfMostPlayedHeroes(1).getKda());
+            TextView txtHeroName = new TextView(this);
+            RelativeLayout.LayoutParams paramsForTxtHeroName = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            paramsForTxtHeroName.addRule(RelativeLayout.RIGHT_OF, img.getId());
+            txtHeroName.setTextColor(Color.WHITE);
+            txtHeroName.setText(mph.getGameOfMostPlayedHeroes(i).getHeroName());
+            txtHeroName.setId(i + 10);
 
-        ImageView imgHeroOverview2 = (ImageView) findViewById(R.id.overview_hero_avatar_3);
-        TextView txtHeroNameOverview2 = (TextView) findViewById(R.id.overview_hero_name_3);
-        TextView txtHeroLastMatchOverview2 = (TextView) findViewById(R.id.overview_hero_last_match_3);
-        TextView txtHeroGamesPlayedOverview2 = (TextView) findViewById(R.id.overview_hero_matches_played_3);
-        TextView txtHeroWinRateOverview2 = (TextView) findViewById(R.id.overview_hero_win_rate_3);
-        TextView txtHeroKdaRatioOverview2 = (TextView) findViewById(R.id.overview_hero_kda_ratio_3);
+            TextView txtLastMatch = new TextView(this);
+            txtLastMatch.setText(mph.getGameOfMostPlayedHeroes(i).getLastMatch());
+            RelativeLayout.LayoutParams paramsForTxtLastMatch = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            paramsForTxtLastMatch.addRule(RelativeLayout.RIGHT_OF, img.getId());
+            paramsForTxtLastMatch.addRule(RelativeLayout.BELOW, txtHeroName.getId());
 
-        new DownloadImageTask(imgHeroOverview2).execute(mph.getGameOfMostPlayedHeroes(2).getHeroAvatarSrc());
-        txtHeroNameOverview2.setText(mph.getGameOfMostPlayedHeroes(2).getHeroName());
-        txtHeroLastMatchOverview2.setText(mph.getGameOfMostPlayedHeroes(2).getLastMatch());
-        txtHeroGamesPlayedOverview2.setText(mph.getGameOfMostPlayedHeroes(2).getMatchesPlayed());
-        txtHeroWinRateOverview2.setText(mph.getGameOfMostPlayedHeroes(2).getWinRate());
-        txtHeroKdaRatioOverview2.setText(mph.getGameOfMostPlayedHeroes(2).getKda());
+            LinearLayout secondInnerOverviewL = new LinearLayout(this);
+            secondInnerOverviewL.setOrientation(LinearLayout.HORIZONTAL);
+            RelativeLayout.LayoutParams paramsForSecondInnerOverviewL = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            paramsForSecondInnerOverviewL.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
+            paramsForSecondInnerOverviewL.addRule(RelativeLayout.CENTER_VERTICAL);
 
-        ImageView imgHeroOverview3 = (ImageView) findViewById(R.id.overview_hero_avatar_4);
-        TextView txtHeroNameOverview3 = (TextView) findViewById(R.id.overview_hero_name_4);
-        TextView txtHeroLastMatchOverview3 = (TextView) findViewById(R.id.overview_hero_last_match_4);
-        TextView txtHeroGamesPlayedOverview3 = (TextView) findViewById(R.id.overview_hero_matches_played_4);
-        TextView txtHeroWinRateOverview3 = (TextView) findViewById(R.id.overview_hero_win_rate_4);
-        TextView txtHeroKdaRatioOverview3 = (TextView) findViewById(R.id.overview_hero_kda_ratio_4);
+            TextView txtMatchesPlayed = new TextView(this);
+            txtMatchesPlayed.setText(mph.getGameOfMostPlayedHeroes(i).getMatchesPlayed());
+            txtMatchesPlayed.setTextSize(16);
+            txtMatchesPlayed.setPadding(32, 0, 0, 0);
+            txtMatchesPlayed.setId(i + 20);
 
-        new DownloadImageTask(imgHeroOverview3).execute(mph.getGameOfMostPlayedHeroes(3).getHeroAvatarSrc());
-        txtHeroNameOverview3.setText(mph.getGameOfMostPlayedHeroes(3).getHeroName());
-        txtHeroLastMatchOverview3.setText(mph.getGameOfMostPlayedHeroes(3).getLastMatch());
-        txtHeroGamesPlayedOverview3.setText(mph.getGameOfMostPlayedHeroes(3).getMatchesPlayed());
-        txtHeroWinRateOverview3.setText(mph.getGameOfMostPlayedHeroes(3).getWinRate());
-        txtHeroKdaRatioOverview3.setText(mph.getGameOfMostPlayedHeroes(3).getKda());
+            TextView txtWinRate = new TextView(this);
+            txtWinRate.setText(mph.getGameOfMostPlayedHeroes(i).getWinRate());
+            txtMatchesPlayed.setTextSize(16);
+            txtWinRate.setPadding(32, 0, 0, 0);
+            txtWinRate.setId(i + 30);
 
-        ImageView imgHeroOverview4 = (ImageView) findViewById(R.id.overview_hero_avatar_5);
-        TextView txtHeroNameOverview4 = (TextView) findViewById(R.id.overview_hero_name_5);
-        TextView txtHeroLastMatchOverview4 = (TextView) findViewById(R.id.overview_hero_last_match_5);
-        TextView txtHeroGamesPlayedOverview4 = (TextView) findViewById(R.id.overview_hero_matches_played_5);
-        TextView txtHeroWinRateOverview4 = (TextView) findViewById(R.id.overview_hero_win_rate_5);
-        TextView txtHeroKdaRatioOverview4 = (TextView) findViewById(R.id.overview_hero_kda_ratio_5);
+            TextView txtKda = new TextView(this);
+            txtKda.setTextColor(Color.rgb(255,152,0));
+            txtKda.setText(mph.getGameOfMostPlayedHeroes(i).getKda());
+            txtMatchesPlayed.setTextSize(16);
+            txtKda.setPadding(32, 0, 0, 0);
+            txtKda.setId(i + 40);
 
-        new DownloadImageTask(imgHeroOverview4).execute(mph.getGameOfMostPlayedHeroes(4).getHeroAvatarSrc());
-        txtHeroNameOverview4.setText(mph.getGameOfMostPlayedHeroes(4).getHeroName());
-        txtHeroLastMatchOverview4.setText(mph.getGameOfMostPlayedHeroes(4).getLastMatch());
-        txtHeroGamesPlayedOverview4.setText(mph.getGameOfMostPlayedHeroes(4).getMatchesPlayed());
-        txtHeroWinRateOverview4.setText(mph.getGameOfMostPlayedHeroes(4).getWinRate());
-        txtHeroKdaRatioOverview4.setText(mph.getGameOfMostPlayedHeroes(4).getKda());
+            secondInnerOverviewL.addView(txtMatchesPlayed);
+            secondInnerOverviewL.addView(txtWinRate);
+            secondInnerOverviewL.addView(txtKda);
 
-        ImageView imgHeroOverview5 = (ImageView) findViewById(R.id.overview_hero_avatar_6);
-        TextView txtHeroNameOverview5 = (TextView) findViewById(R.id.overview_hero_name_6);
-        TextView txtHeroLastMatchOverview5 = (TextView) findViewById(R.id.overview_hero_last_match_6);
-        TextView txtHeroGamesPlayedOverview5 = (TextView) findViewById(R.id.overview_hero_matches_played_6);
-        TextView txtHeroWinRateOverview5 = (TextView) findViewById(R.id.overview_hero_win_rate_6);
-        TextView txtHeroKdaRatioOverview5 = (TextView) findViewById(R.id.overview_hero_kda_ratio_6);
-
-        new DownloadImageTask(imgHeroOverview5).execute(mph.getGameOfMostPlayedHeroes(4).getHeroAvatarSrc());
-        txtHeroNameOverview5.setText(mph.getGameOfMostPlayedHeroes(5).getHeroName());
-        txtHeroLastMatchOverview5.setText(mph.getGameOfMostPlayedHeroes(5).getLastMatch());
-        txtHeroGamesPlayedOverview5.setText(mph.getGameOfMostPlayedHeroes(5).getMatchesPlayed());
-        txtHeroWinRateOverview5.setText(mph.getGameOfMostPlayedHeroes(5).getWinRate());
-        txtHeroKdaRatioOverview5.setText(mph.getGameOfMostPlayedHeroes(5).getKda());
-
-        ImageView imgHeroOverview6 = (ImageView) findViewById(R.id.overview_hero_avatar_7);
-        TextView txtHeroNameOverview6 = (TextView) findViewById(R.id.overview_hero_name_7);
-        TextView txtHeroLastMatchOverview6 = (TextView) findViewById(R.id.overview_hero_last_match_7);
-        TextView txtHeroGamesPlayedOverview6 = (TextView) findViewById(R.id.overview_hero_matches_played_7);
-        TextView txtHeroWinRateOverview6 = (TextView) findViewById(R.id.overview_hero_win_rate_7);
-        TextView txtHeroKdaRatioOverview6 = (TextView) findViewById(R.id.overview_hero_kda_ratio_7);
-
-        new DownloadImageTask(imgHeroOverview6).execute(mph.getGameOfMostPlayedHeroes(6).getHeroAvatarSrc());
-        txtHeroNameOverview6.setText(mph.getGameOfMostPlayedHeroes(6).getHeroName());
-        txtHeroLastMatchOverview6.setText(mph.getGameOfMostPlayedHeroes(6).getLastMatch());
-        txtHeroGamesPlayedOverview6.setText(mph.getGameOfMostPlayedHeroes(6).getMatchesPlayed());
-        txtHeroWinRateOverview6.setText(mph.getGameOfMostPlayedHeroes(6).getWinRate());
-        txtHeroKdaRatioOverview6.setText(mph.getGameOfMostPlayedHeroes(6).getKda());
-
-        ImageView imgHeroOverview7 = (ImageView) findViewById(R.id.overview_hero_avatar_8);
-        TextView txtHeroNameOverview7 = (TextView) findViewById(R.id.overview_hero_name_8);
-        TextView txtHeroLastMatchOverview7 = (TextView) findViewById(R.id.overview_hero_last_match_8);
-        TextView txtHeroGamesPlayedOverview7 = (TextView) findViewById(R.id.overview_hero_matches_played_8);
-        TextView txtHeroWinRateOverview7 = (TextView) findViewById(R.id.overview_hero_win_rate_8);
-        TextView txtHeroKdaRatioOverview7 = (TextView) findViewById(R.id.overview_hero_kda_ratio_8);
-
-        new DownloadImageTask(imgHeroOverview7).execute(mph.getGameOfMostPlayedHeroes(4).getHeroAvatarSrc());
-        txtHeroNameOverview7.setText(mph.getGameOfMostPlayedHeroes(7).getHeroName());
-        txtHeroLastMatchOverview7.setText(mph.getGameOfMostPlayedHeroes(7).getLastMatch());
-        txtHeroGamesPlayedOverview7.setText(mph.getGameOfMostPlayedHeroes(7).getMatchesPlayed());
-        txtHeroWinRateOverview7.setText(mph.getGameOfMostPlayedHeroes(7).getWinRate());
-        txtHeroKdaRatioOverview7.setText(mph.getGameOfMostPlayedHeroes(7).getKda());
-
-        ImageView imgHeroOverview8 = (ImageView) findViewById(R.id.overview_hero_avatar_9);
-        TextView txtHeroNameOverview8 = (TextView) findViewById(R.id.overview_hero_name_9);
-        TextView txtHeroLastMatchOverview8 = (TextView) findViewById(R.id.overview_hero_last_match_9);
-        TextView txtHeroGamesPlayedOverview8 = (TextView) findViewById(R.id.overview_hero_matches_played_9);
-        TextView txtHeroWinRateOverview8 = (TextView) findViewById(R.id.overview_hero_win_rate_9);
-        TextView txtHeroKdaRatioOverview8 = (TextView) findViewById(R.id.overview_hero_kda_ratio_9);
-
-        new DownloadImageTask(imgHeroOverview8).execute(mph.getGameOfMostPlayedHeroes(8).getHeroAvatarSrc());
-        txtHeroNameOverview8.setText(mph.getGameOfMostPlayedHeroes(8).getHeroName());
-        txtHeroLastMatchOverview8.setText(mph.getGameOfMostPlayedHeroes(8).getLastMatch());
-        txtHeroGamesPlayedOverview8.setText(mph.getGameOfMostPlayedHeroes(8).getMatchesPlayed());
-        txtHeroWinRateOverview8.setText(mph.getGameOfMostPlayedHeroes(8).getWinRate());
-        txtHeroKdaRatioOverview8.setText(mph.getGameOfMostPlayedHeroes(8).getKda());
-
-        ImageView imgHeroOverview9 = (ImageView) findViewById(R.id.overview_hero_avatar_10);
-        TextView txtHeroNameOverview9 = (TextView) findViewById(R.id.overview_hero_name_10);
-        TextView txtHeroLastMatchOverview9 = (TextView) findViewById(R.id.overview_hero_last_match_10);
-        TextView txtHeroGamesPlayedOverview9 = (TextView) findViewById(R.id.overview_hero_matches_played_10);
-        TextView txtHeroWinRateOverview9 = (TextView) findViewById(R.id.overview_hero_win_rate_10);
-        TextView txtHeroKdaRatioOverview9 = (TextView) findViewById(R.id.overview_hero_kda_ratio_10);
-
-        new DownloadImageTask(imgHeroOverview9).execute(mph.getGameOfMostPlayedHeroes(9).getHeroAvatarSrc());
-        txtHeroNameOverview9.setText(mph.getGameOfMostPlayedHeroes(9).getHeroName());
-        txtHeroLastMatchOverview9.setText(mph.getGameOfMostPlayedHeroes(9).getLastMatch());
-        txtHeroGamesPlayedOverview9.setText(mph.getGameOfMostPlayedHeroes(9).getMatchesPlayed());
-        txtHeroWinRateOverview9.setText(mph.getGameOfMostPlayedHeroes(9).getWinRate());
-        txtHeroKdaRatioOverview9.setText(mph.getGameOfMostPlayedHeroes(9).getKda());
+            overviewL.addView(img, paramsForImg);
+            overviewL.addView(txtHeroName, paramsForTxtHeroName);
+            overviewL.addView(txtLastMatch,paramsForTxtLastMatch);
+            overviewL.addView(secondInnerOverviewL, paramsForSecondInnerOverviewL);
+            l.addView(overviewL, paramsForOverviewL);
+            layout.addView(l, paramsForL);
+        }
     }
 }

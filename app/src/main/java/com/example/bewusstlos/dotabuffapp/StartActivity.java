@@ -1,9 +1,10 @@
 package com.example.bewusstlos.dotabuffapp;
 
-import android.content.Context;
-import android.content.DialogInterface;
+
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.print.PrintAttributes;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -13,9 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
-import android.widget.SearchView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
@@ -27,87 +26,96 @@ import java.util.regex.Pattern;
  */
 public class StartActivity extends AppCompatActivity {
     String urlForProfile = null;
-    String passUrl = null;
     String htmlSrc = null;
+    LinearLayout layoutProfileLeft;
+    EditText searchProfile;
     ArrayList<SearchedHero> searchedHeroes = new ArrayList<SearchedHero>();
-    public View.OnClickListener onClick = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            //Якого воно не работає???
-            startMainActivity(v, searchedHeroes);
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_start);
-        final EditText searchProfile = (EditText) findViewById(R.id.search_profile);
+        searchProfile = (EditText) findViewById(R.id.search_profile);
         Button btnSearch = (Button) findViewById(R.id.btn_search);
-        final LinearLayout layoutProfileLeft = (LinearLayout) findViewById(R.id.layout_profiles_left);
+        layoutProfileLeft = (LinearLayout) findViewById(R.id.layout_profiles_left);
         searchProfile.setHint("UserName...");
-        btnSearch.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String profileName = searchProfile.getText().toString();
-                urlForProfile = "http://www.dotabuff.com/search?utf8=&q=" + searchProfile.getText().toString().replace(" ", "+") + "&commit=Search";
-                while (htmlSrc == "" || htmlSrc == null) {
-                    setHtmlSrc(urlForProfile);
-                }
-                for (int i = 0; i < 30; i++) {
+        btnSearch.setOnClickListener(onSearchClick);
+    }
+
+    View.OnClickListener onItemClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            try {
+                Intent pass = new Intent(StartActivity.this, MainActivity.class);
+                String extra = searchedHeroes.get(v.getId()).getProfileUrl();
+                pass.putExtra("Link", extra);
+                startActivity(pass, new Bundle());
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+            }
+        }
+    };
+
+    View.OnClickListener onSearchClick = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            urlForProfile = "http://www.dotabuff.com/search?utf8=&q=" + searchProfile.getText().toString().replace(" ", "+") + "&commit=Search";
+            while (htmlSrc == "" || htmlSrc == null) {
+                setHtmlSrc(urlForProfile);
+            }
+            for (int i = 0; i < 30; i++) {
+                try {
                     searchedHeroes.add(i, new SearchedHero(i));
-                    RelativeLayout l = new RelativeLayout(StartActivity.this);
-                    RelativeLayout.LayoutParams rlp = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,
-                            RelativeLayout.LayoutParams.WRAP_CONTENT);
-                    rlp.setMargins(8, 0, 8, 8);
-                    l.setLayoutParams(rlp);
-                    l.setId(i);
-                    //l.setLayoutParams(LinearLayout.);
+                    LinearLayout l = new LinearLayout(StartActivity.this);
+                    LinearLayout.LayoutParams paramsForL = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                    paramsForL.setMargins(16, 16, 16, 0);
+                    l.setOrientation(LinearLayout.HORIZONTAL);
+                    l.setBackgroundColor(Color.rgb(69, 90, 100));
+                    l.setId(i + 40);
+
                     ImageView img = new ImageView(StartActivity.this);
                     new DownloadImageTask(img).execute(searchedHeroes.get(i).getImageSrc());
-                    img.setId(i + 40);
-                    l.addView(img);
-                    RelativeLayout innerL = new RelativeLayout(StartActivity.this);
-                    RelativeLayout.LayoutParams paramsForInnerL = new RelativeLayout.LayoutParams
-                            (RelativeLayout.LayoutParams.WRAP_CONTENT,
-                                    RelativeLayout.LayoutParams.WRAP_CONTENT
-                            );
-                    paramsForInnerL.addRule(RelativeLayout.RIGHT_OF, img.getId());
+                    img.setClickable(true);
+                    img.setOnClickListener(onItemClick);
+                    LinearLayout.LayoutParams paramsForImg = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                    paramsForImg.setMargins(8, 8, 8, 8);
+                    img.setId(i);
+                    l.addView(img, paramsForImg);
+
+                    LinearLayout innerL = new LinearLayout(StartActivity.this);
+                    LinearLayout.LayoutParams paramsForInnerL = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+                    paramsForInnerL.setMargins(8, 0, 0, 8);
+                    innerL.setOrientation(LinearLayout.VERTICAL);
+
                     TextView txtProfileName = new TextView(StartActivity.this);
                     txtProfileName.setText(searchedHeroes.get(i).getName());
+                    txtProfileName.setTextSize(24);
+                    txtProfileName.setTextColor(Color.WHITE);
                     txtProfileName.setId(i + 80);
+
                     TextView txtLastMatch = new TextView(StartActivity.this);
                     txtLastMatch.setText(searchedHeroes.get(i).getLastMatch());
                     txtLastMatch.setId(i + 120);
-                    RelativeLayout.LayoutParams paramsForNameLastMatch = new RelativeLayout.LayoutParams
-                            (
-                                    RelativeLayout.LayoutParams.WRAP_CONTENT,
-                                    RelativeLayout.LayoutParams.WRAP_CONTENT
-                            );
-                    innerL.addView(txtProfileName, paramsForNameLastMatch);
-                    paramsForNameLastMatch.addRule(RelativeLayout.BELOW, txtLastMatch.getId());
-                    l.addView(innerL, paramsForNameLastMatch);
-                    l.setOnClickListener(onClick);
-                    layoutProfileLeft.addView(l, rlp);
-                }
-                //while(m.find()) {
-                //(profileName == m.group(2)) {
-                //m.find();
-                //passUrl = "http://www.dotabuff.com" + m.group(1);
-                //Intent pass = new Intent(StartActivity.this, MainActivity.class);
-                //pass.putExtra("EmpID", passUrl);
-                //startActivity(pass);
-                //}
-                //}
-            }
-        });
-    }
 
-    public void startMainActivity(View view, ArrayList<SearchedHero> searchedHeros) {
-        Intent pass = new Intent(StartActivity.this, MainActivity.class);
-        pass.putExtra("Link", searchedHeros.get(view.getId()).getProfileUrl());
-        startActivity(pass);
-    }
+                    TextView txtLastMatchLabel = new TextView(StartActivity.this);
+                    txtLastMatchLabel.setText("Last Match");
+                    txtLastMatch.setTextColor(Color.rgb(255, 152, 0));
+                    txtLastMatchLabel.setId(i + 160);
+
+                    innerL.addView(txtProfileName);
+                    innerL.addView(txtLastMatchLabel);
+                    innerL.addView(txtLastMatch);
+
+                    l.addView(innerL, paramsForInnerL);
+
+                    layoutProfileLeft.addView(l, paramsForL);
+                }
+                catch (Exception e){
+                    break;
+                }
+            }
+        }
+    };
 
     public void setHtmlSrc(String urlForProfile) {
         RequestTask requestTask = new RequestTask();
@@ -133,7 +141,7 @@ public class StartActivity extends AppCompatActivity {
                 "src=\"(.*?)\" />" +
                 "</a></div></div><div class=\"identity\"><div class=\"head\"><a class=\"link-type-player\" " +
                 "href=\".*?\">(.*?)</a> </div><div class=\"body\">" +
-                "<div class=\"body-item\">(.*?)</div></div></div></div></div>").matcher(htmlSrc);
+                "<div class=\"body-item\">.*?<time datetime=\"(.*?)T(.*?):(.*?):.*?\" title=\".*?\" data-time-ago=\".*?\">.*?</time></div></div></div></div></div>").matcher(htmlSrc);
         private String name;
         private String imageSrc;
         private String profileUrl;
@@ -145,7 +153,7 @@ public class StartActivity extends AppCompatActivity {
             profileUrl = "http://dotabuff.com" + m.group(1);
             imageSrc = m.group(2);
             name = m.group(3);
-            lastMatch = m.group(4);
+            lastMatch = m.group(4) + " " + (Integer.parseInt(m.group(5)) + 3) + ":" + m.group(6);
         }
 
         public String getName() {

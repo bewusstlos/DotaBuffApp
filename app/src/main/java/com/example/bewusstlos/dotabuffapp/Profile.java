@@ -97,8 +97,9 @@ public class Profile {
 
     private void setLastMatch(){
         //data-time-ago="2016-04-09T09:25:25+00:00"
-        com.example.bewusstlos.dotabuffapp.Date date = new com.example.bewusstlos.dotabuffapp.Date(htmlSrc);
-        lastMatch = date.compareWithCurrent();
+        Matcher m = Pattern.compile("<time datetime=\"(.*?)T(.*?):(.*?):.*?\"").matcher(htmlSrc);
+        m.find();
+        lastMatch = m.group(1) + " " + (Integer.parseInt(m.group(2)) + 3) +":"+ m.group(3);
     }
 
     public String getLastMatch(){

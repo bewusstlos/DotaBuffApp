@@ -113,7 +113,7 @@ public class MostPlayedHeroes {
                     "<div class=\"r-none-mobile\">" +
                     "<a href=\".*?\">.*?</a>" +
                     "<div class=\"subtext minor\"><a href=\".*?\">" +
-                    "(.*?) title=\".*?\" " +
+                    "<time datetime=\"(.*?)T(.*?):(.*?):.*?\" title=\".*?\" " +
                     "data-time-ago=\".*?\">.*?</time></a></div></div></div></div>" +
                     "<div class=\"r-fluid r-20 r-line-graph\">" +
                     "<div class=\"r-label\">Matches Played</div><div class=\"r-body\">.*?<div class=\"bar bar-default\">" +
@@ -125,9 +125,7 @@ public class MostPlayedHeroes {
                     "<div class=\"r-body\">.*?<div class=\"bar bar-default\"><div class=\"segment segment-kda\" style=\"width: .*?;\">" +
                     "</div></div></div></div>").matcher(info.get(index));
             m.find();
-            String unparsedDate = m.group(1);
-            Date date = new Date(unparsedDate);
-            lastMatch = date.compareWithCurrent();
+            lastMatch = m.group(1) + " " + m.group(2) + ":" + m.group(3);
         }
 
         public String getHeroAvatarSrc() {
