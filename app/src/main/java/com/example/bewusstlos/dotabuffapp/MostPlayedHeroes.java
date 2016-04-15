@@ -70,7 +70,6 @@ public class MostPlayedHeroes {
         }
 
         private void setHeroName(int index) {
-            //Нада пофіксить
             Matcher m = Pattern.compile("data-link-to=\".*?\">" +
                     "<div class=\"r-fluid r-40 r-icon-text\">" +
                     "<div class=\"r-label r-always-hidden\">Hero</div><div class=\"r-body\">" +
@@ -94,7 +93,7 @@ public class MostPlayedHeroes {
                     "<div class=\"r-body\">.*?<div class=\"bar bar-default\"><div class=\"segment segment-kda\" style=\"width: .*?;\">" +
                     "</div></div></div></div>").matcher(info.get(index));
             m.find();
-            heroName = m.group(1);
+            heroName = m.group(1).replace("&#39;", "'");
         }
 
         public String getLastMatch() {

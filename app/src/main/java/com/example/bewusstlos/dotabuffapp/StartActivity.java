@@ -30,18 +30,6 @@ public class StartActivity extends AppCompatActivity {
     LinearLayout layoutProfileLeft;
     EditText searchProfile;
     ArrayList<SearchedHero> searchedHeroes = new ArrayList<SearchedHero>();
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_start);
-        searchProfile = (EditText) findViewById(R.id.search_profile);
-        Button btnSearch = (Button) findViewById(R.id.btn_search);
-        layoutProfileLeft = (LinearLayout) findViewById(R.id.layout_profiles_left);
-        searchProfile.setHint("UserName...");
-        btnSearch.setOnClickListener(onSearchClick);
-    }
-
     View.OnClickListener onItemClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -55,7 +43,6 @@ public class StartActivity extends AppCompatActivity {
             }
         }
     };
-
     View.OnClickListener onSearchClick = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -70,7 +57,7 @@ public class StartActivity extends AppCompatActivity {
                     LinearLayout.LayoutParams paramsForL = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                     paramsForL.setMargins(16, 16, 16, 0);
                     l.setOrientation(LinearLayout.HORIZONTAL);
-                    l.setBackgroundColor(Color.rgb(69, 90, 100));
+                    l.setBackgroundColor(Color.rgb(55, 71, 79));
                     l.setId(i + 40);
 
                     ImageView img = new ImageView(StartActivity.this);
@@ -116,6 +103,17 @@ public class StartActivity extends AppCompatActivity {
             }
         }
     };
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_start);
+        searchProfile = (EditText) findViewById(R.id.search_profile);
+        Button btnSearch = (Button) findViewById(R.id.btn_search);
+        layoutProfileLeft = (LinearLayout) findViewById(R.id.layout_profiles_left);
+        searchProfile.setHint("UserName...");
+        btnSearch.setOnClickListener(onSearchClick);
+    }
 
     public void setHtmlSrc(String urlForProfile) {
         RequestTask requestTask = new RequestTask();

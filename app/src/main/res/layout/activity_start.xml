@@ -7,28 +7,31 @@
 
 
     <Button
-        android:layout_alignParentRight="true"
         android:id="@+id/btn_search"
-        android:layout_marginRight="8dp"
-        android:layout_marginTop="8dp"
-        android:scaleType="fitCenter"
-        android:text="Search"
-        android:textSize="28dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/colorPrimaryDark"/>
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/colorPrimaryDark"
+        android:padding="8dp"
+        android:scaleType="fitCenter"
+        android:text="Search"
+        android:textColor="@color/textPrimary"
+        android:textSize="26dp" />
 
     <EditText
         android:id="@+id/search_profile"
         android:layout_width="match_parent"
-        android:layout_toLeftOf="@id/btn_search"
         android:layout_height="50dp"
-        android:layout_marginLeft="8dp"
-        android:textSize="28dp"
         android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
-        android:background="@color/colorPrimaryDark">
+        android:layout_toLeftOf="@id/btn_search"
+        android:background="@color/colorPrimaryDark"
+        android:textColor="@color/textSecondary"
+        android:textSize="28dp">
 
     </EditText>
 
