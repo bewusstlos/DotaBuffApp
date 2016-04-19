@@ -46,7 +46,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/txt_profile_name"
-                    android:text="Win Rate"
+                    android:text="@string/win_rate"
                     android:textAlignment="center"
                     android:textColor="@color/textSecondary"
                     android:textSize="12sp" />
@@ -72,7 +72,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_below="@id/txt_profile_name"
-                    android:text="Record"
+                    android:text="@string/record"
                     android:textAlignment="center"
                     android:textColor="@color/textSecondary"
                     android:textSize="12sp" />
@@ -197,7 +197,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Most Played Heroes"
+                        android:text="@string/most_played_heroes"
                         android:textAlignment="center"
                         android:textColor="@color/textSecondary"
                         android:textSize="20sp" />
@@ -254,7 +254,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Work in progess..."
+                        android:text="@string/work_in_progress"
                         android:textSize="28dp" />
 
                 </LinearLayout>
@@ -276,7 +276,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Work in progess..."
+                        android:text="@string/work_in_progress"
                         android:textSize="28dp" />
                 </LinearLayout>
 
@@ -297,7 +297,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Work in progess..."
+                        android:text="@string/work_in_progress"
                         android:textSize="28dp" />
                 </LinearLayout>
 
@@ -318,7 +318,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Work in progess..."
+                        android:text="@string/work_in_progress"
                         android:textSize="28dp" />
 
                 </LinearLayout>
@@ -340,7 +340,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Work in progess..."
+                        android:text="@string/work_in_progress"
                         android:textSize="28dp" />
 
                 </LinearLayout>
@@ -362,7 +362,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:text="Work in progess..."
+                        android:text="@string/work_in_progress"
                         android:textSize="28dp" />
 
                 </LinearLayout>

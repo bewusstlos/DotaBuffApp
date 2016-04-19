@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -47,18 +48,18 @@ public class StartActivity extends AppCompatActivity {
         @Override
         public void onClick(View v) {
             urlForProfile = "http://www.dotabuff.com/search?utf8=&q=" + searchProfile.getText().toString().replace(" ", "+") + "&commit=Search";
-            while (htmlSrc == "" || htmlSrc == null) {
+            if (htmlSrc == "" || htmlSrc == null) {
                 setHtmlSrc(urlForProfile);
             }
             for (int i = 0; i < 30; i++) {
                 try {
                     searchedHeroes.add(i, new SearchedHero(i));
-                    LinearLayout l = new LinearLayout(StartActivity.this);
+                    LinearLayout layout = new LinearLayout(StartActivity.this);
                     LinearLayout.LayoutParams paramsForL = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
                     paramsForL.setMargins(16, 16, 16, 0);
-                    l.setOrientation(LinearLayout.HORIZONTAL);
-                    l.setBackgroundColor(Color.rgb(55, 71, 79));
-                    l.setId(i + 40);
+                    layout.setOrientation(LinearLayout.HORIZONTAL);
+                    layout.setBackgroundColor(Color.rgb(55, 71, 79));
+                    layout.setId(i + 40);
 
                     ImageView img = new ImageView(StartActivity.this);
                     new DownloadImageTask(img).execute(searchedHeroes.get(i).getImageSrc());
@@ -67,11 +68,11 @@ public class StartActivity extends AppCompatActivity {
                     LinearLayout.LayoutParams paramsForImg = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT);
                     paramsForImg.setMargins(8, 8, 8, 8);
                     img.setId(i);
-                    l.addView(img, paramsForImg);
+                    layout.addView(img, paramsForImg);
 
                     LinearLayout innerL = new LinearLayout(StartActivity.this);
                     LinearLayout.LayoutParams paramsForInnerL = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-                    paramsForInnerL.setMargins(8, 0, 0, 8);
+                    paramsForInnerL.setMargins(8, 0, 8, 0);
                     innerL.setOrientation(LinearLayout.VERTICAL);
 
                     TextView txtProfileName = new TextView(StartActivity.this);
@@ -86,16 +87,15 @@ public class StartActivity extends AppCompatActivity {
 
                     TextView txtLastMatchLabel = new TextView(StartActivity.this);
                     txtLastMatchLabel.setText("Last Match");
-                    txtLastMatch.setTextColor(Color.rgb(255, 152, 0));
+                    txtLastMatch.setTextColor(getResources().getColor(R.color.textSecondary));
                     txtLastMatchLabel.setId(i + 160);
 
                     innerL.addView(txtProfileName);
                     innerL.addView(txtLastMatchLabel);
                     innerL.addView(txtLastMatch);
 
-                    l.addView(innerL, paramsForInnerL);
-
-                    layoutProfileLeft.addView(l, paramsForL);
+                    layout.addView(innerL, paramsForInnerL);
+                    layoutProfileLeft.addView(layout, paramsForL);
                 }
                 catch (Exception e){
                     break;
@@ -146,12 +146,13 @@ public class StartActivity extends AppCompatActivity {
         private String lastMatch;
 
         public SearchedHero(int index) {
-            for (int i = 0; i < index + 1; i++)
+            for (int i = 0; i < index + 1; i++) {
                 m.find();
+            }
             profileUrl = "http://dotabuff.com" + m.group(1);
             imageSrc = m.group(2);
             name = m.group(3);
-            lastMatch = m.group(4) + " " + (Integer.parseInt(m.group(5)) + 3) + ":" + m.group(6);
+            lastMatch = m.group(4) + " " + m.group(5) + ":" + m.group(6);
         }
 
         public String getName() {

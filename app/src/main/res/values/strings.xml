@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">DotaBuffApp</string>
+    <string name="win_rate">Win Rate</string>
+    <string name="record">Record</string>
+    <string name="most_played_heroes">Most played heroes</string>
+    <string name="work_in_progress">Work in Progress</string>
 </resources>

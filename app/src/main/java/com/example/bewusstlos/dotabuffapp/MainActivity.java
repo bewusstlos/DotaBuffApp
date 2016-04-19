@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.text.Layout;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -62,8 +63,8 @@ public class MainActivity extends StartActivity {
         heroesLayout = (LinearLayout) findViewById(R.id.heroes);
         TabHost tabs = (TabHost) findViewById(android.R.id.tabhost);
         tabs.setup();
-        TabHost.TabSpec spec = tabs.newTabSpec("tag1");
 
+        TabHost.TabSpec spec = tabs.newTabSpec("tag1");
         spec.setContent(R.id.overview);
         spec.setIndicator("Overview");
         tabs.addTab(spec);
@@ -112,17 +113,20 @@ public class MainActivity extends StartActivity {
         TextView txtRecordLosses = (TextView) findViewById(R.id.txt_record_losses);
         TextView txtRecordAbandons = (TextView) findViewById(R.id.txt_record_abandons);
         TextView txtLastMatch = (TextView) findViewById(R.id.txt_last_match);
-        Profile profile = new Profile(url);
-        new DownloadImageTask(imgProfileAvatar).execute(profile.getAvatarSrc());
-        txtProfileName.setText(profile.getProfileName());
-        txtWinRate.setText(profile.getWinRate());
-        txtRecordWins.setText(profile.getRecordWins());
-        txtRecordLosses.setText(profile.getRecordLosses());
-        txtRecordAbandons.setText(profile.getRecordAbandons());
-        txtLastMatch.setText(profile.getLastMatch());
-
-        setOverviewLayout(overviewLayout);
-        setMatchesLayout(matchesLayout);
+        try {
+            Profile profile = new Profile(url);
+            new DownloadImageTask(imgProfileAvatar).execute(profile.getAvatarSrc());
+            txtProfileName.setText(profile.getProfileName());
+            txtWinRate.setText(profile.getWinRate());
+            txtRecordWins.setText(profile.getRecordWins());
+            txtRecordLosses.setText(profile.getRecordLosses());
+            txtRecordAbandons.setText(profile.getRecordAbandons());
+            txtLastMatch.setText(profile.getLastMatch());
+            setOverviewLayout(overviewLayout);
+            setMatchesLayout(matchesLayout);
+        } catch (IllegalStateException e) {
+            Toast.makeText(this, "This profile is private", Toast.LENGTH_SHORT);
+        }
     }
 
     public void setMatchesLayout(LinearLayout layout) {
@@ -154,27 +158,21 @@ public class MainActivity extends StartActivity {
 
             LinearLayout firstInnerMatchesL = new LinearLayout(this);
             firstInnerMatchesL.setOrientation(LinearLayout.VERTICAL);
-            RelativeLayout.LayoutParams paramsForFirstInnerMatchesL = new RelativeLayout.LayoutParams
-                    (
-                            ViewGroup.LayoutParams.WRAP_CONTENT,
-                            ViewGroup.LayoutParams.WRAP_CONTENT
-                    );
-            paramsForFirstInnerMatchesL.addRule(RelativeLayout.RIGHT_OF, img.getId());
-            paramsForFirstInnerMatchesL.setMargins(0, 0, 0, 0);
+            RelativeLayout.LayoutParams paramsForFirstInnerMatchesL = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            //paramsForFirstInnerMatchesL.addRule(RelativeLayout.RIGHT_OF,img.getId());
+            paramsForFirstInnerMatchesL.setMargins(150, 0, 16, 0);
             firstInnerMatchesL.setId(i + 40);
 
             TextView txtHeroName = new TextView(this);
             txtHeroName.setText(matches.get(i).heroName);
             txtHeroName.setTextColor(Color.WHITE);
             txtHeroName.setId(i + 80);
-
             firstInnerMatchesL.addView(txtHeroName);
 
             TextView txtMatchTime = new TextView(this);
             txtMatchTime.setText(matches.get(i).matchTime);
             txtMatchTime.setTextColor(Color.argb(170, 255, 255, 255));
             txtMatchTime.setId(i + 120);
-
             firstInnerMatchesL.addView(txtMatchTime);
 
             TextView txtMatchRanked = new TextView(this);
@@ -192,7 +190,6 @@ public class MainActivity extends StartActivity {
             RelativeLayout.LayoutParams paramsForMatchType = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
             paramsForMatchType.addRule(RelativeLayout.BELOW, txtMatchRanked.getId());
             paramsForMatchType.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-            paramsForFirstInnerMatchesL.setMargins(16, 0, 16, 0);
             txtMatchType.setId(i + 200);
 
             TextView txtResult = new TextView(this);
@@ -202,11 +199,9 @@ public class MainActivity extends StartActivity {
             txtResult.setTextColor(Color.argb(170, 255, 255, 255));
             txtResult.setTextSize(18);
             txtResult.setText(matches.get(i).result);
-            if (txtResult.getText().toString() == "Won Match")
-                txtResult.setTextColor(Color.GREEN);
-            if (txtResult.getText().toString() == "Lost Match")
-                txtResult.setTextColor(Color.RED);
+            txtResult.setTextColor(getResources().getColor(R.color.textSecondary));
             txtResult.setId(i + 280);
+            matchesL.addView(txtResult, paramsForTxtResult);
 
             TextView txtDuration = new TextView(this);
             txtDuration.setText(matches.get(i).duration);
@@ -216,7 +211,6 @@ public class MainActivity extends StartActivity {
             txtDuration.setTextColor(Color.argb(170, 255, 255, 255));
             txtDuration.setId(i + 320);
 
-            matchesL.addView(txtResult, paramsForTxtResult);
             matchesL.addView(txtDuration, paramsForTxtDuration);
 
             LinearLayout matchesProgressKdaL = new LinearLayout(this);
@@ -229,7 +223,7 @@ public class MainActivity extends StartActivity {
             paramsForTxtBar.addRule(RelativeLayout.CENTER_IN_PARENT);
 
             LinearLayout killBar = new LinearLayout(this);
-            killBar.setBackgroundColor(Color.argb(170, 0, 230, 0));
+            killBar.setBackgroundColor(Color.argb(170, 230, 0, 0));
             float killWeight = ((matches.get(i).kill + matches.get(i).death + matches.get(i).assist) / 100) * matches.get(i).kill;
             LinearLayout.LayoutParams paramsForKillBar = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, killWeight);
             killBar.setId(i + 400);
@@ -250,7 +244,7 @@ public class MainActivity extends StartActivity {
             deathBar.addView(txtDeathBar, paramsForKillBar);
 
             LinearLayout assistBar = new LinearLayout(this);
-            assistBar.setBackgroundColor(Color.argb(170, 230, 0, 0));
+            assistBar.setBackgroundColor(Color.argb(170, 0, 230, 0));
             float assistWeight = ((matches.get(i).kill + matches.get(i).death + matches.get(i).assist) / 100) * matches.get(i).assist;
             LinearLayout.LayoutParams paramsForAssistBar = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, assistWeight);
 
@@ -287,7 +281,7 @@ public class MainActivity extends StartActivity {
             matchesL.addView(img, paramsForImg);
             matchesL.addView(firstInnerMatchesL, paramsForFirstInnerMatchesL);
             l.addView(matchesL, paramsForOverviewL);
-            if (i != 0)
+            //if (i != 0)
                 layout.addView(l, lp);
         }
     }
@@ -320,7 +314,8 @@ public class MainActivity extends StartActivity {
 
             TextView txtHeroName = new TextView(this);
             RelativeLayout.LayoutParams paramsForTxtHeroName = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            paramsForTxtHeroName.addRule(RelativeLayout.RIGHT_OF, img.getId());
+            //paramsForTxtHeroName.addRule(RelativeLayout.RIGHT_OF, img.getId());
+            paramsForTxtHeroName.setMargins(150, 0, 0, 0);
             txtHeroName.setTextColor(Color.WHITE);
             txtHeroName.setText(mph.getGameOfMostPlayedHeroes(i).getHeroName());
             txtHeroName.setId(i + 10);
@@ -328,7 +323,8 @@ public class MainActivity extends StartActivity {
             TextView txtLastMatch = new TextView(this);
             txtLastMatch.setText(mph.getGameOfMostPlayedHeroes(i).getLastMatch());
             RelativeLayout.LayoutParams paramsForTxtLastMatch = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            paramsForTxtLastMatch.addRule(RelativeLayout.RIGHT_OF, img.getId());
+            //paramsForTxtLastMatch.addRule(RelativeLayout.RIGHT_OF, img.getId());
+            paramsForTxtLastMatch.setMargins(150, 0, 0, 0);
             txtLastMatch.setTextColor(Color.argb(170, 255, 255, 255));
             paramsForTxtLastMatch.addRule(RelativeLayout.BELOW, txtHeroName.getId());
 
@@ -369,7 +365,6 @@ public class MainActivity extends StartActivity {
             overviewL.addView(txtLastMatch, paramsForTxtLastMatch);
             overviewL.addView(secondInnerOverviewL, paramsForSecondInnerOverviewL);
             l.addView(overviewL, paramsForOverviewL);
-            if (i != 0)
             layout.addView(l, paramsForL);
         }
     }
@@ -432,13 +427,13 @@ public class MainActivity extends StartActivity {
                         "data-tooltip-url=\".*?\" " +
                         "src=\"(.*?)\" />" +
                         "</a></div>").matcher(this.htmlMatchesSrc);
-                for (int i = 0; i < index + 1; i++) {
+                for (int i = 0; i < index; i++) {
                     m.find();
                 }
                 if (m.find() == true)
-                    itemsList[index] = "http://www.dotabuff.com" + m.group(1);
+                    itemsList[j] = "http://www.dotabuff.com" + m.group(1);
                 else
-                    itemsList[index] = null;
+                    itemsList[j] = null;
                 index++;
             }
         }
